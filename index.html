@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Telemetry Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <h2>Live Temperature Chart</h2>
+    <canvas id="tempChart" width="600" height="300"></canvas>
+
+    <script>
+      const ctx = document.getElementById('tempChart').getContext('2d');
+      const tempChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: [],
+            borderColor: 'red',
+            borderWidth: 2,
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            x: { display: true },
+            y: { display: true, beginAtZero: true }
+          }
+        }
+      });
+
+      setInterval(async () => {
+        const res = await fetch('http://localhost:3000/data');
+        const data = await res.json();
+        const now = new Date().toLocaleTimeString();
+
+        tempChart.data.labels.push(now);
+        tempChart.data.datasets[0].data.push(data.temp);
+
+        if (tempChart.data.labels.length > 10) {
+          tempChart.data.labels.shift();
+          tempChart.data.datasets[0].data.shift();
+        }
+
+        tempChart.update();
+      }, 5000);
+    </script>
+  </body>
+</html>
